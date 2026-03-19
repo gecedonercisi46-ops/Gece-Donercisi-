@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Döner House | Gece Dönercisi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #ff9f43;
+            --fire: #ff4d00;
+            --dark: #0a0a0a;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 159, 67, 0.4);
+            --insta: #E1306C; /* Instagram Marka Rengi */
+        }
+
+        /* Mevcut CSS kodlarınızın devamı... */
+        #welcome-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        .welcome-content h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 20px;
+            color: #fff;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+            padding: 0 20px;
+            text-transform: uppercase;
+        }
+
+        .menu-view-btn {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 24px;
+            padding: 15px 40px;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 159, 67, 0.4);
+            transition: 0.3s;
+        }
+
+        .menu-view-btn:active { transform: scale(0.9); }
+        .hide-welcome { transform: translateY(-100%); }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background: var(--dark); 
+            color: #fff; 
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        .bg-fixed {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -5;
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.95)), 
+                        url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1974&auto=format&fit=crop'); 
+            background-size: cover;
+            background-position: center;
+        }
+
+        #spark-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        header { 
+            height: 35vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .logo-box {
+            border: 3px solid var(--primary);
+            padding: 20px 30px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+        }
+
+        .logo-text {
+            font-family: 'Bebas Neue', cursive;
+            font-size: clamp(40px, 12vw, 75px);
+            line-height: 0.9;
+            background: linear-gradient(to bottom, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container { 
+            width: 100%;
+            max-width: 500px; 
+            margin: 0 auto; 
+            padding: 0 20px 180px; 
+        }
+
+        .section-header {
+            text-align: center;
+            margin: 40px 0 20px;
+            position: relative;
+        }
+
+        .section-header h2 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 28px;
+            color: var(--primary);
+            background: var(--dark);
+            padding: 0 15px;
+            display: inline-block;
+            position: relative; z-index: 2;
+        }
+
+        .section-header::after {
+            content: "";
+            position: absolute;
+            left: 0; top: 55%; width: 100%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
+        .item-card, .drink-box {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            transition: transform 0.1s ease;
+            cursor: pointer;
+        }
+
+        .item-card:active, .drink-box:active { transform: scale(0.95); }
+
+        .item-card {
+            margin-bottom: 10px;
+            padding: 16px 20px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-name { font-size: 16px; font-weight: 700; color: #fdfdfd; }
+        .item-price { font-family: 'Bebas Neue', cursive; font-size: 26px; color: var(--primary); }
+        .porsiyon-text { font-size: 14px; color: #fff; opacity: 0.6; margin-left: 5px; }
+
+        .drink-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .drink-box {
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .drink-box h4 { font-family: 'Bebas Neue'; color: #ccc; font-size: 16px; }
+        .drink-box p { font-family: 'Bebas Neue'; color: var(--primary); font-size: 24px; }
+
+        /* Instagram ve Sipariş Butonları için Güncelleme */
+        .order-wrapper {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        .order-nav, .insta-btn {
+            pointer-events: auto;
+            width: 90%;
+            max-width: 380px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            transition: 0.3s;
+        }
+
+        .order-nav {
+            background: linear-gradient(135deg, #d35400, #ff9f43);
+            color: #fff;
+            padding: 12px 20px;
+            flex-direction: column;
+        }
+
+        .insta-btn {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: white;
+            padding: 10px;
+            font-family: 'Bebas Neue', cursive;
+            font-size: 20px;
+            gap: 10px;
+        }
+
+        .insta-btn i { font-size: 24px; }
+        .btn-tel { font-family: 'Bebas Neue', cursive; font-size: 28px; line-height: 1; }
+        
+        .insta-btn:active, .order-nav:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-screen">
+        <div class="welcome-content">
+            <div class="animate__animated animate__fadeInDown">
+                <h1 style="font-family:'Bebas Neue'; font-size: 60px; color: var(--primary); margin-bottom: 10px;">DÖNER HOUSE</h1>
+            </div>
+            <h2 class="animate__animated animate__fadeInUp animate__delay-1s">Geceyi Lezzetle Aydınlatıyoruz</h2>
+            <button class="menu-view-btn animate__animated animate__pulse animate__infinite" onclick="openMenu()">MENÜYÜ GÖR</button>
+        </div>
+    </div>
+
+    <div class="bg-fixed"></div>
+    <canvas id="spark-canvas"></canvas>
+
+    <header>
+        <div class="logo-box">
+            <h1 class="logo-text">DÖNER HOUSE</h1>
+            <p style="color:var(--primary); font-family:'Bebas Neue'; font-size:18px; letter-spacing:4px;">GECE DÖNERCİSİ</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="section-header"><h2>DÖNER ÇEŞİTLERİ</h2></div>
+        
+        <div class="item-card" onclick="createBurst(event)">
+            <div class="item-name">Tavuk Döner</div>
+            <div class="item-price">110 TL <span class="porsiyon-text">(1.5: 150)</span></div>
+        </div>
+
+        <div class="item-card" onclick="createBurst(event)">
+            <div class="item-name">Pilav Üstü Tavuk Döner</div>
+            <div class="item-price">190 TL <span class="porsiyon-text">(1.5: 230)</span></div>
+        </div>
+
+        <div class="item-card" onclick="createBurst(event)">
+            <div class="item-name">Tavuk İskender</div>
+            <div class="item-price">220 TL <span class="porsiyon-text">(1.5: 270)</span></div>
+        </div>
+
+        <div class="item-card" onclick="createBurst(event)">
+            <div class="item-name">Et Döner</div>
+            <div class="item-price">160 TL <span class="porsiyon-text">(1.5: 220)</span></div>
+        </div>
+
+        <div class="item-card" onclick="createBurst(event)">
+            <div class="item-name">Pilav Üstü Et Döner</div>
+            <div class="item-price">260 TL <span class="porsiyon-text">(1.5: 320)</span></div>
+        </div>
+
+        <div class="item-card" onclick="createBurst(event)">
+            <div class="item-name">Et İskender</div>
+            <div class="item-price">280 TL <span class="porsiyon-text">(1.5: 340)</span></div>
+        </div>
+
+        <div class="section-header"><h2>ÖZEL LEZZETLER</h2></div>
+        
+        <div class="item-card" onclick="createBurst(event)">
+            <div class="item-name">Çökertme</div>
+            <div class="item-price">280 TL <span class="porsiyon-text">(1.5: 340)</span></div>
+        </div>
+
+        <div class="item-card" onclick="createBurst(event)">
+            <div class="item-name">Sarma Beyti</div>
+            <div class="item-price">280 TL <span class="porsiyon-text">(1.5: 340)</span></div>
+        </div>
+
+        <div class="section-header"><h2>EKSTRALAR</h2></div>
+        <div class="item-card" onclick="createBurst(event)"><div class="item-name">Çorba</div><div class="item-price">80 TL</div></div>
+        <div class="item-card" onclick="createBurst(event)"><div class="item-name">Cips Tabağı</div><div class="item-price">80 TL</div></div>
+
+        <div class="section-header"><h2>İÇECEKLER</h2></div>
+        <div class="drink-grid">
+            <div class="drink-box" onclick="createBurst(event)"><h4>Ayran</h4><p>20 TL</p></div>
+            <div class="drink-box" onclick="createBurst(event)"><h4>Şalgam</h4><p>20 TL</p></div>
+            <div class="drink-box" onclick="createBurst(event)"><h4>Su</h4><p>10 TL</p></div>
+            <div class="drink-box" onclick="createBurst(event)"><h4>Sade Soda</h4><p>15 TL</p></div>
+            <div class="drink-box" onclick="createBurst(event)"><h4>Meyveli Soda</h4><p>20 TL</p></div>
+            <div class="drink-box" onclick="createBurst(event)"><h4>Şişe Kola</h4><p>40 TL</p></div>
+            <div class="drink-box" onclick="createBurst(event)" style="grid-column: span 2;"><h4>Kola</h4><p>50 TL</p></div>
+        </div>
+    </div>
+
+    <div class="order-wrapper">
+        <a href="https://www.instagram.com/gecedonercisi.andirin?igsh=MWdpcmYwemY0OHoxcA==" target="_blank" class="insta-btn">
+            <i class="fab fa-instagram"></i>
+            <span>Bizi Takip Edin</span>
+        </a>
+
+        <a href="tel:05393256915" class="order-nav">
+            <span style="font-size:10px; font-weight:900; letter-spacing:2px; margin-bottom: 2px;">PAKET SERVİS İÇİN</span>
+            <span class="btn-tel">0539 325 69 15</span>
+        </a>
+    </div>
+
+    <script>
+        function openMenu() {
+            document.getElementById('welcome-screen').classList.add('hide-welcome');
+        }
+
+        const canvas = document.getElementById('spark-canvas');
+        const ctx = canvas.getContext('2d');
+        let sparks = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Spark {
+            constructor(x, y, isBurst = false) {
+                this.x = x; this.y = y;
+                this.size = Math.random() * (isBurst ? 5 : 2) + 0.5;
+                this.speedX = (Math.random() - 0.5) * (isBurst ? 12 : 1);
+                this.speedY = isBurst ? (Math.random() * -15 - 5) : (Math.random() * -3 - 1);
+                this.opacity = 1;
+                this.color = `hsla(${Math.random() * 30 + 15}, 100%, 60%, `;
+            }
+            update() { this.x += this.speedX; this.y += this.speedY; this.opacity -= 0.025; }
+            draw() {
+                ctx.fillStyle = this.color + this.opacity + ')';
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+
+        function createBurst(e) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX || rect.left + rect.width/2;
+            const y = e.clientY || rect.top + rect.height/2;
+            for (let i = 0; i < 20; i++) sparks.push(new Spark(x, y, true));
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (Math.random() < 0.1) sparks.push(new Spark(Math.random() * canvas.width, canvas.height + 10));
+            for (let i = 0; i < sparks.length; i++) {
+                sparks[i].update(); sparks[i].draw();
+                if (sparks[i].opacity <= 0) { sparks.splice(i, 1); i--; }
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
