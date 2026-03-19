@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gece Dönercisi | Dijital Menü</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #ff9f43;
+            --fire: #ff4d00;
+            --dark: #0a0a0a;
+            --glass: rgba(255, 255, 255, 0.08);
+            --border: rgba(255, 159, 67, 0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Montserrat', sans-serif; background: var(--dark); color: #fff; overflow-x: hidden; width: 100%; }
+
+        #welcome-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+            z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+        .welcome-content h1 { font-family: 'Bebas Neue', cursive; font-size: 65px; color: var(--primary); letter-spacing: 2px; }
+        .slogan-text { font-family: 'Montserrat'; font-weight: 700; font-size: 14px; color: #eee; letter-spacing: 1px; margin-top: 5px; text-transform: uppercase; }
+        .menu-view-btn { font-family: 'Bebas Neue', cursive; font-size: 26px; padding: 18px 50px; background: var(--primary); color: #000; border: none; border-radius: 50px; cursor: pointer; margin-top: 25px; box-shadow: 0 0 20px rgba(255, 159, 67, 0.4); }
+        .hide-welcome { transform: translateY(-100%); }
+
+        .bg-fixed {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -5;
+            background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.95)), url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1974&auto=format&fit=crop'); 
+            background-size: cover; background-position: center;
+        }
+
+        #spark-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+
+        header { height: 25vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .logo-box { border: 2px solid var(--primary); padding: 15px 30px; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border-radius: 12px; }
+        .logo-text { font-family: 'Bebas Neue', cursive; font-size: 55px; line-height: 0.9; color: var(--primary); }
+
+        .container { width: 100%; max-width: 500px; margin: 0 auto; padding: 0 15px 240px; }
+        .section-header { text-align: center; margin: 40px 0 20px; position: relative; }
+        .section-header h2 { font-family: 'Bebas Neue', cursive; font-size: 30px; color: var(--primary); background: var(--dark); padding: 0 15px; display: inline-block; position: relative; z-index: 2; }
+        .section-header::after { content: ""; position: absolute; left: 0; top: 55%; width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--primary), transparent); }
+
+        .item-card { background: var(--glass); border: 1px solid var(--border); backdrop-filter: blur(5px); margin-bottom: 12px; padding: 18px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+        .item-price { font-family: 'Bebas Neue', cursive; font-size: 28px; color: var(--primary); }
+
+        .order-wrapper { position: fixed; bottom: 20px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 999; }
+        .order-nav, .insta-btn { width: 92%; max-width: 400px; text-decoration: none; display: flex; align-items: center; justify-content: center; border-radius: 20px; position: relative; transition: 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.1); }
+        .order-nav { background: linear-gradient(135deg, #d35400, #ff9f43); color: #fff; padding: 15px; flex-direction: column; }
+        .insta-btn { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: white; padding: 12px; font-family: 'Bebas Neue', cursive; font-size: 22px; gap: 10px; }
+        .counter-badge { position: absolute; top: -10px; right: 15px; background: #fff; color: #ff4d00; font-family: 'Bebas Neue'; font-size: 15px; padding: 2px 12px; border-radius: 20px; border: 2px solid #ff4d00; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-screen">
+        <div class="welcome-content">
+            <h1 class="animate__animated animate__fadeInDown">GECE DÖNERCİSİ</h1>
+            <p class="slogan-text">Geceyi lezzetle aydınlatıyoruz</p>
+            <button class="menu-view-btn" onclick="openMenu()">MENÜYÜ GÖR</button>
+        </div>
+    </div>
+
+    <div class="bg-fixed"></div>
+    <canvas id="spark-canvas"></canvas>
+
+    <header>
+        <div class="logo-box">
+            <h1 class="logo-text">GECE DÖNERCİSİ</h1>
+            <p style="color:var(--primary); font-family:'Montserrat'; font-weight:700; font-size:11px; letter-spacing:1px;">GECEYİ LEZZETLE AYDINLATIYORUZ</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="section-header"><h2>DÖNERLER</h2></div>
+        <div class="item-card" onclick="createBurst(event)"><div>Tavuk Döner</div><div class="item-price">110 TL</div></div>
+        <div class="item-card" onclick="createBurst(event)"><div>Et Döner</div><div class="item-price">160 TL</div></div>
+    </div>
+
+    <div class="order-wrapper">
+        <a href="https://www.instagram.com/gecedonercisi.andirin" target="_blank" class="insta-btn" id="insta-clicker">
+            <i class="fab fa-instagram"></i> TAKİP ET
+            <div id="insta-count" class="counter-badge">0</div>
+        </a>
+
+        <a href="tel:05393256915" class="order-nav" id="order-clicker">
+            <span style="font-size:11px; font-weight:900; letter-spacing:2px; margin-bottom: 5px;">PAKET SERVİS ARA</span>
+            <span style="font-family:'Bebas Neue'; font-size:32px;">0539 325 69 15</span>
+            <div id="order-count" class="counter-badge">0</div>
+        </a>
+    </div>
+
+    <script>
+        // KALICI SAYAÇ SİSTEMİ (GitHub Pages üzerinde tam çalışır)
+        const namespace = "gecedonercisi_v2026_final"; 
+
+        async function updateDisplay() {
+            try {
+                // Instagram Sayısı
+                const resInsta = await fetch(`https://api.countapi.xyz/get/${namespace}/insta_hits`);
+                const dataInsta = await resInsta.json();
+                if(dataInsta.value) document.getElementById('insta-count').innerText = dataInsta.value;
+
+                // Sipariş Sayısı
+                const resOrder = await fetch(`https://api.countapi.xyz/get/${namespace}/order_hits`);
+                const dataOrder = await resOrder.json();
+                if(dataOrder.value) document.getElementById('order-count').innerText = dataOrder.value;
+            } catch (e) { console.log("Yükleniyor..."); }
+        }
+
+        async function increment(type) {
+            try {
+                // Sunucuya kaydet (+1 artır)
+                const res = await fetch(`https://api.countapi.xyz/hit/${namespace}/${type}_hits`);
+                const data = await res.json();
+                document.getElementById(`${type}-count`).innerText = data.value;
+            } catch (e) {
+                // İnternet hatası olursa ekranda geçici artır
+                let el = document.getElementById(`${type}-count`);
+                el.innerText = parseInt(el.innerText) + 1;
+            }
+        }
+
+        document.getElementById('insta-clicker').addEventListener('click', () => increment('insta'));
+        document.getElementById('order-clicker').addEventListener('click', () => increment('order'));
+
+        // Sayfa her açıldığında ve her 10 saniyede bir günceller (Başkası bastıysa gör diye)
+        window.onload = () => { updateDisplay(); setInterval(updateDisplay, 10000); };
+
+        function openMenu() { document.getElementById('welcome-screen').classList.add('hide-welcome'); }
+
+        // Görsel Efektler
+        const canvas = document.getElementById('spark-canvas');
+        const ctx = canvas.getContext('2d');
+        let sparks = [];
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+
+        class Spark {
+            constructor(x, y, isBurst = false) {
+                this.x = x; this.y = y;
+                this.size = Math.random() * (isBurst ? 5 : 2) + 0.5;
+                this.speedX = (Math.random() - 0.5) * (isBurst ? 12 : 1.5);
+                this.speedY = isBurst ? (Math.random() * -15 - 5) : (Math.random() * -3 - 1);
+                this.opacity = 1;
+                this.color = `hsla(${Math.random() * 30 + 15}, 100%, 60%, `;
+            }
+            update() { this.x += this.speedX; this.y += this.speedY; this.opacity -= 0.025; }
+            draw() { ctx.fillStyle = this.color + this.opacity + ')'; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); }
+        }
+
+        function createBurst(e) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+            for (let i = 0; i < 20; i++) sparks.push(new Spark(x, y, true));
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (Math.random() < 0.12) sparks.push(new Spark(Math.random() * canvas.width, canvas.height + 10));
+            sparks.forEach((s, i) => { s.update(); s.draw(); if (s.opacity <= 0) sparks.splice(i, 1); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
