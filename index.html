@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Döner House | Gece Dönercisi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK (CDN - NPM GEREKTİRMEZ) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -1; overflow: hidden;
+        }
+        .bg-animation span {
+            position: absolute; display: block; width: 20px; height: 20px;
+            background: rgba(255, 107, 53, 0.1); animation: float 25s infinite linear; border-radius: 50%;
+        }
+        .bg-animation span:nth-child(1) { left: 10%; width: 80px; height: 80px; animation-delay: 0s; }
+        .bg-animation span:nth-child(2) { left: 20%; width: 40px; height: 40px; animation-delay: 2s; animation-duration: 12s; }
+        .bg-animation span:nth-child(3) { left: 35%; width: 100px; height: 100px; animation-delay: 4s; }
+        .bg-animation span:nth-child(4) { left: 50%; width: 60px; height: 60px; animation-delay: 0s; animation-duration: 18s; }
+        .bg-animation span:nth-child(5) { left: 65%; width: 30px; height: 30px; animation-delay: 0s; }
+        .bg-animation span:nth-child(6) { left: 75%; width: 90px; height: 90px; animation-delay: 3s; }
+        .bg-animation span:nth-child(7) { left: 85%; width: 50px; height: 50px; animation-delay: 7s; }
+        .bg-animation span:nth-child(8) { left: 90%; width: 70px; height: 70px; animation-delay: 15s; animation-duration: 45s; }
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 107, 53, 0.95); padding: 20px; text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3); animation: slideDown 0.8s ease;
+        }
+        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        header h1 { font-size: 3em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        header p { font-size: 1.3em; font-style: italic; }
+
+        /* Logo Section */
+        .logo-section { text-align: center; padding: 40px 20px; animation: fadeIn 1s ease; }
+        .logo-circle {
+            width: 200px; height: 200px; background: linear-gradient(135deg, #ff6b35, #f7931e);
+            border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            margin: 0 auto 20px; animation: pulse 2s infinite; border: 5px solid rgba(255,255,255,0.3);
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255,107,53,0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(255,107,53,0.8); }
+        }
+        .logo-circle i { font-size: 4em; color: #fff; margin-bottom: 10px; }
+        .logo-circle h2 { color: #fff; font-size: 1.5em; text-align: center; }
+        .logo-circle p { color: #fff; font-size: 0.9em; text-align: center; }
+
+        /* Navigation */
+        nav {
+            background: rgba(0,0,0,0.5); padding: 15px; text-align: center;
+            position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px);
+        }
+        nav a {
+            color: #fff; text-decoration: none; margin: 0 20px; font-size: 1.1em;
+            transition: all 0.3s; padding: 8px 15px; border-radius: 25px; display: inline-block;
+        }
+        nav a:hover { background: #ff6b35; transform: scale(1.1); }
+
+        /* CTA Button */
+        .cta-button {
+            display: inline-block; background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white; padding: 15px 40px; border-radius: 50px; text-decoration: none;
+            font-size: 1.2em; font-weight: bold; margin: 20px; transition: all 0.3s; animation: bounce 2s infinite;
+        }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .cta-button:hover { transform: scale(1.1); box-shadow: 0 10px 30px rgba(255,107,53,0.5); }
+
+        /* Sections */
+        section { padding: 60px 20px; max-width: 1200px; margin: 0 auto; }
+        h2 {
+            text-align: center; font-size: 2.5em; margin-bottom: 40px;
+            color: #ff6b35; animation: fadeIn 1s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Menu */
+        .menu-category {
+            background: rgba(255,255,255,0.05); border-radius: 20px; padding: 30px;
+            margin-bottom: 30px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+            animation: fadeInUp 0.8s ease;
+        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        .menu-category h3 {
+            color: #ff6b35; font-size: 1.8em; margin-bottom: 20px;
+            border-bottom: 2px solid #ff6b35; padding-bottom: 10px;
+        }
+        .menu-item {
+            display: flex; justify-content: space-between; padding: 15px; margin: 10px 0;
+            background: rgba(255,107,53,0.1); border-radius: 10px; transition: all 0.3s; animation: slideIn 0.5s ease;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+        .menu-item:hover { background: rgba(255,107,53,0.2); transform: translateX(10px); }
+        .menu-item .price { color: #ff6b35; font-weight: bold; font-size: 1.2em; }
+
+        /* Reviews */
+        .reviews-container { display: grid; grid-template-columns: 1fr; gap: 30px; margin-bottom: 50px; }
+        .review-card {
+            background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(255,107,53,0.05));
+            border-radius: 20px; padding: 30px; border: 2px solid rgba(255,107,53,0.3);
+            animation: reviewSlideIn 0.6s ease; transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        @keyframes reviewSlideIn { from { opacity: 0; transform: translateY(50px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .review-card::before {
+            content: '"'; position: absolute; top: -20px; right: 20px; font-size: 150px;
+            color: rgba(255,107,53,0.1); font-family: Georgia, serif;
+        }
+        .review-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 40px rgba(255,107,53,0.3); }
+        .review-header { display: flex; align-items: center; margin-bottom: 15px; animation: fadeIn 1s ease; }
+        .review-avatar {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8em; margin-right: 15px; animation: pulse 2s infinite;
+        }
+        .review-info h4 { color: #ff6b35; font-size: 1.3em; margin-bottom: 5px; }
+        .review-date { color: #888; font-size: 0.9em; }
+        .review-stars { color: #ffd700; margin-bottom: 10px; animation: starGlow 2s infinite; }
+        @keyframes starGlow { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
+        .review-text { font-size: 1.1em; line-height: 1.6; color: #ddd; }
+
+        /* Review Form */
+        .review-form-container {
+            background: linear-gradient(135deg, rgba(255,107,53,0.15), rgba(255,107,53,0.05));
+            border-radius: 20px; padding: 40px; border: 2px solid rgba(255,107,53,0.3);
+            animation: fadeIn 1s ease; max-width: 700px; margin: 0 auto;
+        }
+        .form-group { margin-bottom: 25px; animation: slideIn 0.5s ease; }
+        .form-group label { display: block; margin-bottom: 8px; color: #ff6b35; font-weight: 600; font-size: 1.1em; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 15px; border: 2px solid rgba(255,107,53,0.3);
+            border-radius: 10px; background: rgba(255,255,255,0.1); color: #fff; font-size: 1em; transition: all 0.3s;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none; border-color: #ff6b35; box-shadow: 0 0 15px rgba(255,107,53,0.5); transform: scale(1.02);
+        }
+        .form-group textarea { min-height: 120px; resize: vertical; }
+        .star-rating { display: flex; gap: 10px; font-size: 2em; cursor: pointer; }
+        .star-rating i { color: #555; transition: all 0.3s; }
+        .star-rating i.active, .star-rating i:hover { color: #ffd700; transform: scale(1.2); }
+        .submit-btn {
+            width: 100%; padding: 18px; background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white; border: none; border-radius: 10px; font-size: 1.2em; font-weight: bold;
+            cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .submit-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(255,107,53,0.5); }
+        .submit-btn:active { transform: translateY(0); }
+        .success-message {
+            background: rgba(0,255,0,0.2); border: 2px solid #00ff00; color: #00ff00;
+            padding: 15px; border-radius: 10px; margin-bottom: 20px; display: none; animation: successPop 0.5s ease;
+        }
+        @keyframes successPop { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+        .loading-spinner { text-align: center; padding: 40px; }
+        .loading-spinner i { font-size: 3em; color: #ff6b35; animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* Contact */
+        .contact-section { text-align: center; padding: 60px 20px; }
+        .phone-button {
+            display: inline-block; background: linear-gradient(135deg, #25d366, #128c7e);
+            color: white; padding: 15px 30px; border-radius: 50px; margin-top: 15px;
+            font-weight: bold; transition: all 0.3s; animation: bounce 2s infinite;
+            text-decoration: none; font-size: 1.2em;
+        }
+        .phone-button:hover { transform: scale(1.1); box-shadow: 0 10px 30px rgba(37,211,102,0.5); }
+        .social-link { display: inline-block; margin: 20px; color: #ff6b35; font-size: 2.5em; transition: all 0.3s; }
+        .social-link:hover { color: #f7931e; transform: scale(1.2); }
+
+        /* Footer */
+        footer { background: rgba(0,0,0,0.5); text-align: center; padding: 30px; margin-top: 50px; }
+        footer a { color: #ff6b35; text-decoration: none; font-size: 1.2em; transition: all 0.3s; }
+        footer a:hover { color: #f7931e; transform: scale(1.1); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 { font-size: 2em; } h2 { font-size: 1.8em; }
+            .review-card { padding: 20px; } .review-form-container { padding: 20px; }
+            nav a { margin: 5px 10px; font-size: 0.9em; }
+        }
+        .no-reviews { text-align: center; padding: 40px; color: #888; font-size: 1.2em; animation: fadeIn 1s ease; }
+        .review-count { text-align: center; font-size: 1.2em; color: #ff6b35; margin-bottom: 30px; animation: fadeIn 1s ease; }
+        .error-message {
+            background: rgba(255,0,0,0.2); border: 2px solid #ff0000; color: #ff6b6b;
+            padding: 15px; border-radius: 10px; margin-bottom: 20px; display: none; animation: shake 0.5s ease;
+        }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <h1>🔥 DÖNER HOUSE</h1>
+        <p>Geceyi Lezzetle Aydınlatıyoruz</p>
+    </header>
+
+    <!-- Logo Section -->
+    <div class="logo-section">
+        <div class="logo-circle">
+            <i class="fas fa-drumstick-bite"></i>
+            <h2>DÖNER HOUSE</h2>
+            <p>GECE DÖNERCİSİ</p>
+        </div>
+        <a href="#menu" class="cta-button"><i class="fas fa-utensils"></i> MENÜYÜ GÖR</a>
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#menu"><i class="fas fa-utensils"></i> Menü</a>
+        <a href="#reviews"><i class="fas fa-comments"></i> Yorumlar</a>
+        <a href="#contact"><i class="fas fa-phone"></i> İletişim</a>
+    </nav>
+
+    <!-- Menu Section -->
+    <section id="menu">
+        <h2><i class="fas fa-drumstick-bite"></i> DÖNER ÇEŞİTLERİ</h2>
+        
+        <div class="menu-category">
+            <h3>Tavuk Döner</h3>
+            <div class="menu-item"><span>Tavuk Döner</span><span class="price">110 TL <small>(1.5: 150)</small></span></div>
+            <div class="menu-item"><span>Pilav Üstü Tavuk Döner</span><span class="price">190 TL <small>(1.5: 230)</small></span></div>
+            <div class="menu-item"><span>Tavuk İskender</span><span class="price">220 TL <small>(1.5: 270)</small></span></div>
+        </div>
+
+        <div class="menu-category">
+            <h3>Et Döner</h3>
+            <div class="menu-item"><span>Et Döner</span><span class="price">160 TL <small>(1.5: 220)</small></span></div>
+            <div class="menu-item"><span>Pilav Üstü Et Döner</span><span class="price">260 TL <small>(1.5: 320)</small></span></div>
+            <div class="menu-item"><span>Et İskender</span><span class="price">280 TL <small>(1.5: 340)</small></span></div>
+        </div>
+
+        <div class="menu-category">
+            <h3>Özel Lezzetler</h3>
+            <div class="menu-item"><span>Çökertme</span><span class="price">280 TL <small>(1.5: 340)</small></span></div>
+            <div class="menu-item"><span>Sarma Beyti</span><span class="price">280 TL <small>(1.5: 340)</small></span></div>
+        </div>
+
+        <div class="menu-category">
+            <h3>Ekstralar</h3>
+            <div class="menu-item"><span>Çorba</span><span class="price">80 TL</span></div>
+            <div class="menu-item"><span>Cips Tabağı</span><span class="price">80 TL</span></div>
+        </div>
+
+        <div class="menu-category">
+            <h3>İçecekler</h3>
+            <div class="menu-item"><span>Ayran</span><span class="price">20 TL</span></div>
+            <div class="menu-item"><span>Şalgam</span><span class="price">20 TL</span></div>
+            <div class="menu-item"><span>Su</span><span class="price">10 TL</span></div>
+            <div class="menu-item"><span>Sade Soda</span><span class="price">15 TL</span></div>
+            <div class="menu-item"><span>Meyveli Soda</span><span class="price">20 TL</span></div>
+            <div class="menu-item"><span>Şişe Kola</span><span class="price">40 TL</span></div>
+            <div class="menu-item"><span>Kola</span><span class="price">50 TL</span></div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section id="reviews">
+        <h2><i class="fas fa-star"></i> Müşteri Yorumları</h2>
+        <div class="review-count">Toplam <strong id="totalReviews">0</strong> yorum</div>
+        <div class="reviews-container" id="reviewsContainer">
+            <div class="loading-spinner"><i class="fas fa-spinner"></i><p style="margin-top:15px">Yorumlar yükleniyor...</p></div>
+        </div>
+
+        <div class="review-form-container">
+            <h3 style="text-align:center;margin-bottom:30px;color:#ff6b35"><i class="fas fa-pen-fancy"></i> Yorumunuzu Yazın</h3>
+            <div class="error-message" id="errorMessage"><i class="fas fa-exclamation-circle"></i> <span id="errorText"></span></div>
+            <div class="success-message" id="successMessage"><i class="fas fa-check-circle"></i> Yorumunuz başarıyla kaydedildi!</div>
+            <form id="reviewForm">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Adınız Soyadınız</label>
+                    <input type="text" id="reviewerName" required placeholder="Adınızı girin...">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-star"></i> Puanınız</label>
+                    <div class="star-rating" id="starRating">
+                        <i class="fas fa-star" data-rating="1"></i>
+                        <i class="fas fa-star" data-rating="2"></i>
+                        <i class="fas fa-star" data-rating="3"></i>
+                        <i class="fas fa-star" data-rating="4"></i>
+                        <i class="fas fa-star" data-rating="5"></i>
+                    </div>
+                    <input type="hidden" id="rating" value="0" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-comment"></i> Yorumunuz</label>
+                    <textarea id="reviewText" required placeholder="Deneyiminizi paylaşın..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn" id="submitBtn"><i class="fas fa-paper-plane"></i> Yorumu Gönder</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <h2><i class="fas fa-phone-alt"></i> İletişim</h2>
+        <div style="text-align:center">
+            <p style="font-size:1.3em;margin-bottom:20px">PAKET SERVİS İÇİN</p>
+            <a href="tel:05393256915" class="phone-button"><i class="fas fa-phone"></i> 0539 325 69 15</a>
+            <div style="margin-top:30px">
+                <a href="https://www.instagram.com/gecedonercisi.andirin" target="_blank" class="social-link"><i class="fab fa-instagram"></i></a>
+                <p style="margin-top:10px;color:#888">@gecedonercisi.andirin</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Döner House - Gece Dönercisi. Tüm Hakları Saklıdır.</p>
+        <p style="margin-top:10px">
+            <a href="https://www.instagram.com/gecedonercisi.andirin" target="_blank"><i class="fab fa-instagram"></i> Bizi Takip Edin</a>
+        </p>
+    </footer>
+
+    <script>
+        // ============================================
+        // FIREBASE CONFIGURATION (SİZİN BİLGİLERİNİZ)
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyD_VjFlDXPNsyA92KtrZ39OEJBMiMpfHxE",
+            authDomain: "gece-donercisi.firebaseapp.com",
+            projectId: "gece-donercisi",
+            storageBucket: "gece-donercisi.firebasestorage.app",
+            messagingSenderId: "952310787701",
+            appId: "1:952310787701:web:62405114a7c435b2b0523c",
+            measurementId: "G-5NG64N9EJR"
+        };
+
+        // Firebase'i başlat
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ============================================
+        // STAR RATING
+        // ============================================
+        const stars = document.querySelectorAll('.star-rating i');
+        const ratingInput = document.getElementById('rating');
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.getAttribute('data-rating');
+                ratingInput.value = rating;
+                stars.forEach(s => {
+                    if (s.getAttribute('data-rating') <= rating) s.classList.add('active');
+                    else s.classList.remove('active');
+                });
+            });
+            star.addEventListener('mouseenter', function() {
+                const rating = this.getAttribute('data-rating');
+                stars.forEach(s => {
+                    s.style.color = (s.getAttribute('data-rating') <= rating) ? '#ffd700' : '#555';
+                });
+            });
+            star.addEventListener('mouseleave', function() {
+                stars.forEach(s => {
+                    s.style.color = (s.getAttribute('data-rating') <= ratingInput.value) ? '#ffd700' : '#555';
+                });
+            });
+        });
+
+        // ============================================
+        // REVIEW SUBMIT - FIREBASE
+        // ============================================
+        document.getElementById('reviewForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const name = document.getElementById('reviewerName').value.trim();
+            const rating = parseInt(document.getElementById('rating').value);
+            const text = document.getElementById('reviewText').value.trim();
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const successMessage = document.getElementById('successMessage');
+
+            if (rating === 0) { showError('Lütfen yıldız puanı verin!'); return; }
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gönderiliyor...';
+
+            try {
+                await db.collection('reviews').add({
+                    name: name,
+                    rating: rating,
+                    text: text,
+                    date: new Date().toLocaleString('tr-TR'),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                successMessage.style.display = 'block';
+                errorMessage.style.display = 'none';
+                this.reset();
+                stars.forEach(s => s.classList.remove('active'));
+                ratingInput.value = '0';
+                setTimeout(() => { successMessage.style.display = 'none'; }, 3000);
+            } catch (error) {
+                console.error('Hata:', error);
+                showError('Yorum kaydedilirken hata oluştu. Tekrar deneyin.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Yorumu Gönder';
+            }
+        });
+
+        function showError(msg) {
+            document.getElementById('errorText').textContent = msg;
+            document.getElementById('errorMessage').style.display = 'block';
+            setTimeout(() => { document.getElementById('errorMessage').style.display = 'none'; }, 5000);
+        }
+
+        // ============================================
+        // LOAD REVIEWS - REALTIME
+        // ============================================
+        function loadReviews() {
+            const container = document.getElementById('reviewsContainer');
+            const totalReviews = document.getElementById('totalReviews');
+
+            db.collection('reviews').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+                const reviews = [];
+                snapshot.forEach(doc => reviews.push({ id: doc.id, ...doc.data() }));
+                totalReviews.textContent = reviews.length;
+
+                if (reviews.length === 0) {
+                    container.innerHTML = `<div class="no-reviews"><i class="fas fa-comments" style="font-size:3em;margin-bottom:20px;color:#ff6b35"></i><p>Henüz yorum yapılmamış. İlk yorumu siz yapın!</p></div>`;
+                    return;
+                }
+                container.innerHTML = reviews.map((review, index) => `
+                    <div class="review-card" style="animation-delay:${index*0.1}s">
+                        <div class="review-header">
+                            <div class="review-avatar">${review.name.charAt(0).toUpperCase()}</div>
+                            <div class="review-info">
+                                <h4>${review.name}</h4>
+                                <div class="review-date"><i class="far fa-clock"></i> ${review.date || 'Yakın zamanda'}</div>
+                            </div>
+                        </div>
+                        <div class="review-stars">${getStars(review.rating)}</div>
+                        <div class="review-text">${review.text}</div>
+                    </div>
+                `).join('');
+            }, error => {
+                console.error('Yorum yüklenemedi:', error);
+                container.innerHTML = `<div class="error-message" style="display:block;text-align:center"><i class="fas fa-exclamation-triangle"></i><p>Yorumlar yüklenirken hata oluştu.</p></div>`;
+            });
+        }
+
+        function getStars(rating) {
+            let s = '';
+            for (let i = 1; i <= 5; i++) s += (i <= rating) ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+            return s;
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Initialize
+        window.addEventListener('load', loadReviews);
+    </script>
+</body>
+</html>
